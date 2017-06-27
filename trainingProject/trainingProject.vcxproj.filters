@@ -21,6 +21,9 @@
     <ClCompile Include="coursera_w2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="coursera_w2_2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Percolation.h">
