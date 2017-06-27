@@ -157,7 +157,7 @@ public:
 	}
 };
 
-void TEST_stack()
+void TEST_ListStack()
 {
 	MyStack<int> stack(new ListDataContainer<int>());
 
@@ -173,7 +173,24 @@ void TEST_stack()
 	}
 }
 
+void TEST_ArrayStack()
+{
+	MyStack<int> stack(new ArrayDataContainer<int>());
+
+	for (int i = 0; i < 10; ++i)
+	{
+		stack.push(i);
+	}
+
+	while (!stack.IsEmpty())
+	{
+		int n = stack.pop();
+		std::cout << n << std::endl;
+	}
+}
+
 void main()
 {
-	TEST_stack();
+	TEST_ListStack();
+	TEST_ArrayStack();
 }
