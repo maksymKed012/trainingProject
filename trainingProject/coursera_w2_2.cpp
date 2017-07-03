@@ -70,13 +70,38 @@ template <typename T>
 class ArrayDataContainer : public IDataContainer<T>
 {
 	T* m_aArray;
-	size_t nCapacity;
+	size_t nSize;
 	size_t nPosHead;
 	size_t nPosTail;
 
 	void Resize(size_t nNewSize)
 	{
-		
+		T* aTempArray = new T[nSize];
+
+		for (size_t i = 0; i < nSize; ++i)
+		{
+			aTempArray[i] = m_aArray[i];
+		}
+
+		delete[] m_aArray;
+
+		nPosHead = 0;
+
+		m_aArray = new T[nNewSize];
+
+		for (size_t i = 0; i < nSize; ++i)
+		{
+			m_aArray[i] = aTempArray[i];
+		}
+
+		delete[] aTempArray;
+
+		nSize = nNewSize;
+	}
+
+	bool IsFull()
+	{
+		return nPosTail == nSize - 1;
 	}
 
 public:
@@ -86,17 +111,27 @@ public:
 
 	virtual void Enqueue(T val) override
 	{
-
+		if (IsFull())
+			Resize(nSize * 2);
+		m_aArray[nPosTail++] = val;
 	}
 
 	virtual T Dequeue() override
 	{
-		return T();
+		if (!IsEmpty())
+		{
+			T val = m_aArray[++nPosHead];
+			if (nPosHead == nSize / 4)
+				Resize(nSize / 2);
+			return val;
+		}
+		else
+			return T();
 	}
 
 	virtual void IsEmpty() const override 
 	{
-		return true;
+		return nPosHead == nPosTail;
 	}
 };
 
@@ -136,3 +171,53 @@ public:
 	}
 
 };
+
+template <typename T>
+class MyQueue
+{
+	IDataContainer<T>* m_pDataContainer;
+
+public:
+
+	MyQueue(IDataContainer<T>* pContainer) : m_pDataContainer(pContainer) {}
+	~MyQueue() { delete m_pDataContainer; }
+
+	void Enqueue(T val)
+	{
+		m_pDataContainer->Enqueue(val);
+	}
+
+	T Dequeue()
+	{
+		return m_pDataContainer->Dequeue();
+	}
+
+	bool IsEmpty() { return m_pDataContainer->IsEmpty(); }
+};
+
+const int SIZE = 10;
+
+template <typename T>
+void Do_TEST_Queue(MyQueue<T> & queue)
+{
+	for (size_t i = 0; i < SIZE; ++i)
+	{
+		queue.Enqueue(i);
+	}
+
+	for (size_t i = 0; i < SIZE; ++i)
+	{
+		size_t n = queue.Dequeue();
+		std::cout << n << std::endl;
+	}
+}
+
+void TEST_ListQueue()
+{
+	
+}
+
+void main()
+{
+
+}
