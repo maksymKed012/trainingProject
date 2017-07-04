@@ -3,6 +3,7 @@
 #include <memory>
 
 
+
 template <typename T>
 class IDataContainer
 {
@@ -14,7 +15,7 @@ public:
 };
 
 template <typename T>
-class ListDataContainer : IDataContainer<T>
+class ListDataContainer : public IDataContainer<T>
 {
 	struct Node
 	{
@@ -60,7 +61,7 @@ public:
 		return pNode->data;
 	}
 
-	virtual bool IsEmpty() override
+	virtual bool IsEmpty() const override
 	{
 		return m_pHead == nullptr;
 	}
@@ -85,7 +86,7 @@ class ArrayDataContainer : public IDataContainer<T>
 
 		delete[] m_aArray;
 
-		nPosHead = 0;
+		//nPosHead = 0;
 
 		m_aArray = new T[nNewSize];
 
@@ -106,8 +107,11 @@ class ArrayDataContainer : public IDataContainer<T>
 
 public:
 
-	ArrayDataContainer() : m_aArray(new T[1]), nCapacity(1), nPosHead(0), nPosTail(0) {}
-	~ArrayDataContainer() { delete[] m_aArray; }
+	ArrayDataContainer() : m_aArray(new T[1]), nSize(1), nPosHead(0), nPosTail(0) {}
+	~ArrayDataContainer()
+	{
+		delete [] m_aArray; 
+	}
 
 	virtual void Enqueue(T val) override
 	{
@@ -120,7 +124,7 @@ public:
 	{
 		if (!IsEmpty())
 		{
-			T val = m_aArray[++nPosHead];
+			T val = m_aArray[nPosHead++];
 			if (nPosHead == nSize / 4)
 				Resize(nSize / 2);
 			return val;
@@ -129,7 +133,7 @@ public:
 			return T();
 	}
 
-	virtual void IsEmpty() const override 
+	virtual bool IsEmpty() const override 
 	{
 		return nPosHead == nPosTail;
 	}
@@ -159,7 +163,8 @@ public:
 
 	~DataContainersFactory()
 	{
-		m_aDataContainers.clear();
+		for (std::map<EDataContainerType, IDataContainer<T>*>::iterator it = m_aDataContainers.begin(); it != m_aDataContainers.end(); ++it)
+			delete it->second;
 	}
 
 	IDataContainer<T>* GetDataContainerForType(EDataContainerType eType)
@@ -180,7 +185,7 @@ class MyQueue
 public:
 
 	MyQueue(IDataContainer<T>* pContainer) : m_pDataContainer(pContainer) {}
-	~MyQueue() { delete m_pDataContainer; }
+	~MyQueue() { /*delete m_pDataContainer;*/ }
 
 	void Enqueue(T val)
 	{
@@ -200,24 +205,36 @@ const int SIZE = 10;
 template <typename T>
 void Do_TEST_Queue(MyQueue<T> & queue)
 {
-	for (size_t i = 0; i < SIZE; ++i)
+	for (int i = 0; i < SIZE; ++i)
 	{
 		queue.Enqueue(i);
 	}
 
-	for (size_t i = 0; i < SIZE; ++i)
+	while (!queue.IsEmpty())
 	{
 		size_t n = queue.Dequeue();
 		std::cout << n << std::endl;
 	}
 }
 
-void TEST_ListQueue()
+void TEST_Queue()
 {
-	
+	DataContainersFactory<int> factory;
+
+	{
+		MyQueue<int> queueA(factory.GetDataContainerForType(EDataContainerType::edctArray));
+
+		Do_TEST_Queue(queueA);
+	}
+
+	{
+		MyQueue<int> queueL = factory.GetDataContainerForType(EDataContainerType::edctList);
+
+		Do_TEST_Queue(queueL);
+	}
 }
 
 void main()
 {
-
+	TEST_Queue();
 }
